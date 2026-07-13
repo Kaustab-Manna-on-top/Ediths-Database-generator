@@ -3,8 +3,8 @@ import java.util.*;
 
 public class databasegenerator {
 
-    static String FP =
-        "C:\\Users\\kaust\\OneDrive\\Desktop\\Edith\\Edith-Database";
+    static String FP ="C:\\Users\\kaust\\OneDrive\\Desktop\\Edith\\Edith-Database";
+    static Set<String> GeneratedSentences = new LinkedHashSet<>();
         public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         try {
@@ -37,6 +37,8 @@ public class databasegenerator {
                 System.out.println("Successfully created Base File");
                 FileWriter fw = new FileWriter(file);
                 for (String s : PresentIntents) {
+                    if(s.equalsIgnoreCase("Add Intent")){
+                    }
                     fw.write(s);
                     fw.write("\n");
                 }
@@ -57,8 +59,7 @@ public class databasegenerator {
             }
 
             int i = 0;
-            LinkedHashMap<Integer, String> Menu =
-                new LinkedHashMap<>();
+            LinkedHashMap<Integer, String> Menu = new LinkedHashMap<>();
             for (String s : Intents) {
                 Menu.putIfAbsent(i, s);
                 i++;
@@ -68,7 +69,7 @@ public class databasegenerator {
             for(String s : PresentIntents){
                 String Filepath = FP + "\\" + s + ".txt";
                 File file1 = new File(Filepath);
-                if (file1.createNewFile()) {
+                if (file1.createNewFile()){
                     System.out.println("Successfully created " + s);
                     FileWriter fw = new FileWriter(file1);
                     if(s.equalsIgnoreCase("greetings")){
@@ -91,7 +92,7 @@ public class databasegenerator {
                             fw.write(g);
                             fw.write("\n");
                         }
-                    }
+                    } 
                         else if(s.equalsIgnoreCase("exit")){
                             break;
                         }
@@ -135,59 +136,72 @@ public class databasegenerator {
                     }
                 }
 
-                System.out.println("Do you want to add any new sentences to the intent?? " + "// press I to Add intents " + "// Type combine to combine sentences"
-                );
+                System.out.println("Do you want to add any new sentences to the intent?? " + "//Type Intent to add Intents" + "// Type combine to combine sentences");
 
                 char R =scanner.next().toLowerCase().trim().charAt(0);
                 scanner.nextLine();
                 if (R == 'y') {
                     if (sentenceadder(intent, Filepath, scanner)) {
-                        System.out.println(
-                            "Sentences added successfully"
-                        );
+                        System.out.println("Sentences added successfully");
                     } else {
-                        System.out.println(
-                            "Error adding sentences"
-                        );
+                        System.out.println("Error adding sentences");
                     }
                     continue;
-                } else if (R == 'i') {
-                    System.out.println(
-                        "Enter your Intent/Category"
-                    );
-                    String Intent =
-                        scanner.nextLine().trim();
-                    if (intentadder(Intent,intentFilePath)){
-                        System.out.println(
-                            "Intent added successfully"
-                        );
-                    } else {
-                        System.out.println(
-                            "Error adding intent"
-                        );
-                    }
-                    continue;
-                } else {
+                }
+                else if (R == 'i') {
+                            System.out.println("Enter your Intent/Category");
+                            String Intent = scanner.nextLine().trim();
+                            if (intentadder(Intent,intentFilePath)){
+                                System.out.println("Intent added successfully");
+                            } else {
+                                System.out.println("Error adding intent");
+                            }
+                            continue;
+                        }
+                else{
                     if (sentencecomboer(intent,Filepath)){
-                        System.out.println(
-                            "Sentences combined successfully"
-                        );
-                        break;
+                        System.out.println("Sentences combined successfully");
+                        System.out.println("Do you wanna combine more sentences?? (y/n)");
+                        char choice = scanner.next().toLowerCase().trim().charAt(0);
+                        scanner.nextLine();
+                        if (choice == 'n') {
+                            filemaker();
+                            break;
+                        }
+                        else{
+                            continue;
+                        }
                     } else {
-                        System.out.println(
-                            "Error combining sentences"
-                        );
+                        System.out.println("Error combining sentences");
                     }
                 }
             }
             br.close();
         } catch (Exception e) {
-            System.out.println(
-                "Something happened to the file : " + e
-            );
+            System.out.println("Something happened to the file : " + e);
         }
         scanner.close();
     }
+
+    public static void filemaker(){
+        File file = new File(FP + "\\GeneratedSentences.txt");
+        try {
+            if (file.createNewFile()) {
+                System.out.println("Successfully created Generated Sentences File");
+            } else {
+                System.out.println("Generated Sentences File already exists");
+            }
+            FileWriter fw = new FileWriter(file);
+            for (String s : GeneratedSentences) {
+                fw.write(s);
+                fw.write("\n");
+            }
+            fw.close();
+        } catch (Exception e) {
+            System.out.println("Error in creating Generated Sentences File : " + e);
+        }
+    }
+
     public static boolean sentenceadder(
         String Intent,
         String filepath,
@@ -248,10 +262,7 @@ public class databasegenerator {
         }
     }
 
-    public static boolean intentadder(
-        String Intent,
-        String filepath
-    ) {
+    public static boolean intentadder(String Intent,String filepath){
         try {
             FileReader fr = new FileReader(filepath);
             BufferedReader br = new BufferedReader(fr);
@@ -261,12 +272,8 @@ public class databasegenerator {
                 if (line.trim().isEmpty()) {
                     continue;
                 }
-                if(
-                    line.trim().equalsIgnoreCase(Intent)
-                ){
-                    System.out.println(
-                        "Intent already exists"
-                    );
+                if(line.trim().equalsIgnoreCase(Intent)){
+                    System.out.println("Intent already exists");
                     br.close();
                     return false;
                 }
@@ -287,32 +294,84 @@ public class databasegenerator {
         }
     }
 
-    public static boolean sentencecomboer(
-        String Intent,
-        String filepath
-    ){
+    public static boolean sentencecomboer(String Intent,String filepath){
         String combinerPath = FP + "\\Combiner.txt";
         ArrayList<String> Combiners = new ArrayList<>();
+        ArrayList<String> punctuations = new ArrayList<>();
+        ArrayList<String> prefixes = new ArrayList<>();
+        ArrayList<String> suffixes = new ArrayList<>();
 
         Collections.addAll(Combiners,"Punctuations.txt",
             "Prefix.txt",
             "Suffix.txt"
         );
+        Collections.addAll(punctuations,"!",
+                "?",
+                ".",
+                ","
+            );
+
+        Collections.addAll(prefixes,"hey",
+                "yo",
+                "bro",
+                "well",
+                "um"
+            );
+
+            Collections.addAll(suffixes,"bro",
+                "dude",
+                "mate",
+                "buddy"
+            );
         try {
-            File combinerFile =
-                new File(combinerPath);
+            File combinerFile = new File(combinerPath);
             if (combinerFile.createNewFile()) {
-                System.out.println(
-                    "Successfully created Combiner File"
-                );
+                System.out.println("Successfully created Combiner File");
 
                 FileWriter fw = new FileWriter(combinerFile);
                 for (String s : Combiners) {
-                    fw.write(FP + "\\" + s);
+                    fw.write(s);
                     fw.write("\n");
                 }
                 fw.close();
             } else {
+            }
+
+            for(String s : Combiners){
+                String Filepath = FP + "\\" + s;
+                File file1 = new File(Filepath);
+                if (file1.createNewFile()){
+                    if (s.equalsIgnoreCase("Punctuations.txt")){
+                    FileWriter fw = new FileWriter(file1);
+                    for(String p : punctuations){
+                        fw.write(p);
+                        fw.write("\n");
+                    }
+                    fw.close();
+                } else if (s.equalsIgnoreCase("Prefix.txt")){
+                    FileWriter fw = new FileWriter(file1);
+                    for(String p : prefixes){
+                        fw.write(p);
+                        fw.write("\n");
+                    }
+                    fw.close();
+                } else if (s.equalsIgnoreCase("Suffix.txt")){
+                    FileWriter fw = new FileWriter(file1);
+                    for(String p : suffixes){
+                        fw.write(p);
+                        fw.write("\n");
+                    }
+                    fw.close();
+                }
+                }
+            }
+
+            for(String s : Combiners){
+                String Filepath = FP + "\\" + s;
+                File file1 = new File(Filepath);
+                if(file1.createNewFile()){
+
+                }
             }
 
             FileReader fr = new FileReader(filepath);
@@ -320,7 +379,6 @@ public class databasegenerator {
 
             String line;
             Set<String> Sentences = new LinkedHashSet<>();
-            Set<String> GeneratedSentences = new LinkedHashSet<>();
 
             while ((line = br.readLine()) != null) {
                 line = line.trim();
@@ -331,7 +389,6 @@ public class databasegenerator {
             }
 
             FileReader fr1 = new FileReader(combinerPath);
-
             BufferedReader br1 = new BufferedReader(fr1);
 
             String line1 = "";
@@ -344,12 +401,9 @@ public class databasegenerator {
                 combo.add(line1);
             }
             for (String s : combo) {
-                File combiner = new File(s);
+                File combiner = new File(FP + "\\" + s);
                 if (!combiner.exists()) {
-                    System.out.println(
-                        "Combiner missing : "
-                        + combiner.getAbsolutePath()
-                    );
+                    System.out.println("Combiner missing : " + combiner.getAbsolutePath());
                     continue;
                 }
 
@@ -366,24 +420,32 @@ public class databasegenerator {
                     TP.add(Sym);
                 }
                 tempbr.close();
+                HashSet<String> tempSet = new HashSet<>();
                 for (String T : TP) {
                     for (String sentence : Sentences) {
                         if (filename.toLowerCase().contains("prefix")){
                             GeneratedSentences.add(T + " " + sentence);
                         } 
                         else if (filename.toLowerCase().contains("punctuations")){
+                            for(String P : GeneratedSentences){
+                                tempSet.add(P + T);
+                            } 
                             GeneratedSentences.add(sentence + T);
                         } 
-                        else {GeneratedSentences.add(sentence + " " + T);}
+                        else {
+                            for(String S : GeneratedSentences){
+                                tempSet.add(S + " " + T);
+                            }
+                            GeneratedSentences.add(sentence + " " + T);
+                        }
                         }
                     }
+                    GeneratedSentences.addAll(tempSet);
                 }
             
             int i = 1;
             for (String T : GeneratedSentences) {
-                System.out.println(
-                    i + " : " + T
-                );
+                System.out.println(i + " : " + T); 
                 i++;
             }
 
